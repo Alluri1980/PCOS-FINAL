@@ -8,34 +8,50 @@ from sklearn.preprocessing import StandardScaler
 app = Flask(__name__)
 
 # -----------------------------
+# Helper Functions
+# -----------------------------
+def get_abs_path(relative_path):
+    """Convert relative path to absolute path based on the app's root directory"""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
+
+# -----------------------------
 # Load Model & Artifacts
 # -----------------------------
-model = joblib.load("models/best_model.joblib")
-# scaler = joblib.load("scaler.joblib")  # Pre-fitted scaler from training
-# Load the dataset for preprocessing reference
-top_20_features = joblib.load("models/top_20_features.joblib")  # List of 20 input feature names
-file_path = 'PCOS_data_without_infertility.csv'
-sheet_name = 'Full_new'
-df = pd.read_excel(file_path, sheet_name=sheet_name)
-# Ensure numerical conversion and handle missing values
-for col in df.columns:
-    try:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-    except (ValueError, TypeError):
-        pass
+try:
+    model = joblib.load(get_abs_path("models/best_model.joblib"))
+    top_20_features = joblib.load(get_abs_path("models/top_20_features.joblib"))
+    file_path = get_abs_path('PCOS_data_without_infertility.csv')
+    
+    # Load and preprocess the dataset
+    if file_path.endswith('.csv'):
+        df = pd.read_csv(file_path)
+    else:
+        df = pd.read_excel(file_path, sheet_name='Full_new')
 
-df.drop_duplicates(inplace=True)
-from sklearn.impute import SimpleImputer
-imputer = SimpleImputer(strategy='median')
-numerical_features = df.select_dtypes(include=['number']).columns
-df[numerical_features] = imputer.fit_transform(df[numerical_features])
-scaler = StandardScaler()
-df[top_20_features] = scaler.fit_transform(df[top_20_features])
+    # Ensure numerical conversion and handle missing values
+    for col in df.columns:
+        try:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+        except (ValueError, TypeError):
+            pass
+
+    df.drop_duplicates(inplace=True)
+    from sklearn.impute import SimpleImputer
+    imputer = SimpleImputer(strategy='median')
+    numerical_features = df.select_dtypes(include=['number']).columns
+    df[numerical_features] = imputer.fit_transform(df[numerical_features])
+    scaler = StandardScaler()
+    df[top_20_features] = scaler.fit_transform(df[top_20_features])
+
+except Exception as e:
+    print(f"Error during initialization: {str(e)}")
+    raise
+
 # -----------------------------
 # CSV Files for Deployment
 # -----------------------------
-DEPLOY_CSV = "PCOS_test_deploy_set.csv"
-USER_CSV = "pcos_user_test.csv"
+DEPLOY_CSV = get_abs_path("PCOS_test_deploy_set.csv")
+USER_CSV = get_abs_path("pcos_user_test.csv")
 
 # Initialize CSV files if they do not exist
 for f in [DEPLOY_CSV, USER_CSV]:
