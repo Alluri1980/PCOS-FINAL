@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCOS Predictor - Gynecologist Review</title>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #F5F6FF;
+            --text-color: #2D3748;
+            --border-color: #E2E8F0;
+            --warning-color: #FF6B6B;
+            --success-color: #48BB78;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .patient-info-section {
+            flex: 1;
+            padding: 3rem;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .analysis-section {
+            flex: 1;
+            background: var(--secondary-color);
+            padding: 3rem;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .patient-id {
+            background: var(--secondary-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .patient-id-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-right: 1rem;
+        }
+
+        .patient-id-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--secondary-color);
+            padding: 1.2rem;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .metric-unit {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-left: 0.5rem;
+        }
+
+        .metrics-section {
+            margin-bottom: 2rem;
+        }
+
+        .metrics-category {
+            margin-bottom: 2rem;
+        }
+
+        .metrics-category-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .probability-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .probability-bar {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            width: {{ "%.1f"|format(prob[1] * 100) }}%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .risk-level {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            margin: 1rem 0;
+        }
+
+        .risk-low {
+            background: #E6FFFA;
+            color: #2C7A7B;
+        }
+
+        .risk-moderate {
+            background: #FEFCBF;
+            color: #975A16;
+        }
+
+        .risk-high {
+            background: #FED7D7;
+            color: #C53030;
+        }
+
+        .clinical-notes {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        .fixed-back-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fixed-back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(108, 99, 255, 0.3);
+            background: #5B52FF;
+        }
+
+        .fixed-back-button:active {
+            transform: translateY(0);
+        }
+
+        .fixed-back-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .patient-info-section, .analysis-section {
+                padding: 2rem 1rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fixed-back-button {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="patient-info-section">
+            <div class="patient-header">
+                <h1>Patient Analysis</h1>
+                <div class="patient-id">
+                    <span class="patient-id-label">Patient ID:</span>
+                    <span class="patient-id-value">{{ index }}</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metrics-category">
+                    <div class="metrics-category-title">Personal Information</div>
+                    <div class="metrics-grid">
+                        {% for feature in features %}
+                            {% if feature == ' Age (yrs)' %}
+                            <div class="metric-card">
+                                <div class="metric-label">
+                                    <span>Age</span>
+                                    <span class="metric-unit">yrs</span>
+                                </div>
+                                <div class="metric-value">{{ values[loop.index0] }}</div>
+                            </div>
+                            {% endif %}
+                            {% if feature == 'Marraige Status (Yrs)' %}
+                            <div class="metric-card">
+                                <div class="metric-label">
+                                    <span>Marriage Status</span>
+                                    <span class="metric-unit">Yrs</span>
+                                </div>
+                                <div class="metric-value">{{ values[loop.index0] }}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <h3 style="margin: 1.5rem 0; color: var(--primary-color);">Key Health Metrics</h3>
+                
+                <div class="metrics-section">
+                    <div class="metrics-category">
+                        <div class="metrics-category-title">Hormonal Parameters</div>
+                        <div class="metrics-grid">
+                            {% for feature in features %}
+                                {% if feature in ['FSH(mIU/mL)', 'LH(mIU/mL)', 'FSH/LH', 'TSH (mIU/L)', 'AMH(ng/mL)', 'PRL(ng/mL)', 'PRG(ng/mL)', 'Vit D3 (ng/mL)', 'Hb(g/dl)'] %}
+                                <div class="metric-card">
+                                    <div class="metric-label">
+                                        <span>{{ feature.split('(')[0].strip() }}</span>
+                                        {% if '(' in feature %}
+                                            <span class="metric-unit">{{ feature[feature.index('('):]|replace('(', '')|replace(')', '') }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="metric-value">{{ "%.2f"|format(values[loop.index0]|float) }}</div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="metrics-category">
+                        <div class="metrics-category-title">Physical Parameters</div>
+                        <div class="metrics-grid">
+                            {% for feature in features %}
+                                {% if feature in ['BMI', 'Weight (Kg)', 'Height(Cm)', 'Hip(inch)', 'Waist(inch)', 'Waist:Hip Ratio'] %}
+                                <div class="metric-card">
+                                    <div class="metric-label">
+                                        <span>{{ feature.split('(')[0].strip() }}</span>
+                                        {% if '(' in feature %}
+                                            <span class="metric-unit">{{ feature[feature.index('('):]|replace('(', '')|replace(')', '') }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="metric-value">{{ "%.1f"|format(values[loop.index0]|float) }}</div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="metrics-category">
+                        <div class="metrics-category-title">Menstrual & Clinical Parameters</div>
+                        <div class="metrics-grid">
+                            {% for feature in features %}
+                                {% if feature in ['Cycle length(days)', 'Cycle(R/I)', 'Follicle No. (L)', 'Follicle No. (R)', 'Endometrium (mm)', 'Skin darkening (Y/N)', 'hair growth(Y/N)', 'Weight gain(Y/N)', 'Hair loss(Y/N)', 'Pimples(Y/N)'] %}
+                                <div class="metric-card">
+                                    <div class="metric-label">
+                                        {% if feature == 'Skin darkening (Y/N)' %}
+                                            <span>Skin Darkening</span>
+                                        {% elif feature == 'hair growth(Y/N)' %}
+                                            <span>Hair Growth</span>
+                                        {% else %}
+                                            <span>{{ feature.split('(')[0].strip() }}</span>
+                                            {% if '(' in feature %}
+                                                <span class="metric-unit">{{ feature[feature.index('('):]|replace('(', '')|replace(')', '') }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    {% if feature == 'Skin darkening (Y/N)' or feature == 'hair growth(Y/N)' %}
+                                        <div class="metric-value">{{ "Yes" if values[loop.index0]|float == 1.0 else "No" }}</div>
+                                    {% elif feature in ['Cycle length(days)', 'Follicle No. (L)', 'Follicle No. (R)', 'Cycle(R/I)'] %}
+                                        <div class="metric-value">{{ values[loop.index0] }}</div>
+                                    {% else %}
+                                        <div class="metric-value">{{ "%.1f"|format(values[loop.index0]|float) }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="/gyno" class="back-link">← Back to Patient Entry</a>
+            </div>
+        </div>
+        
+        <div class="analysis-section">
+            <div class="card">
+                <h2 style="color: {{ 'var(--warning-color)' if prediction == 1 else 'var(--success-color)' }}; margin-bottom: 1.5rem;">
+                    {{ "PCOS Detected" if prediction == 1 else "No PCOS Detected" }}
+                </h2>
+
+                <div class="probability-section">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>PCOS Probability</span>
+                        <span>{{ "%.1f"|format(prob[1] * 100) }}%</span>
+                    </div>
+                    <div class="probability-bar">
+                        <div class="probability-fill"></div>
+                    </div>
+                </div>
+
+                {% if prob[1] > 0.7 %}
+                <span class="risk-level risk-high">High Risk</span>
+                {% elif prob[1] > 0.4 %}
+                <span class="risk-level risk-moderate">Moderate Risk</span>
+                {% else %}
+                <span class="risk-level risk-low">Low Risk</span>
+                {% endif %}
+
+                <div class="clinical-notes">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Clinical Assessment</h3>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Probability Analysis:</h4>
+                        <ul style="list-style: none;">
+                            <li style="margin: 0.5rem 0;">• No PCOS: {{ "%.1f"|format(prob[0] * 100) }}%</li>
+                            <li style="margin: 0.5rem 0;">• PCOS: {{ "%.1f"|format(prob[1] * 100) }}%</li>
+    </ul>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Recommended Actions:</h4>
+                        <ul style="list-style: none;">
+                            {% if prob[1] > 0.7 %}
+                            <li style="margin: 0.5rem 0;">• Immediate comprehensive evaluation recommended</li>
+                            <li style="margin: 0.5rem 0;">• Schedule hormonal panel tests</li>
+                            <li style="margin: 0.5rem 0;">• Ultrasound examination advised</li>
+                            <li style="margin: 0.5rem 0;">• Consider endocrine consultation</li>
+                            {% elif prob[1] > 0.4 %}
+                            <li style="margin: 0.5rem 0;">• Schedule follow-up consultation</li>
+                            <li style="margin: 0.5rem 0;">• Monitor menstrual cycle patterns</li>
+                            <li style="margin: 0.5rem 0;">• Consider baseline hormone testing</li>
+                            <li style="margin: 0.5rem 0;">• Lifestyle modification counseling</li>
+                            {% else %}
+                            <li style="margin: 0.5rem 0;">• Routine follow-up recommended</li>
+                            <li style="margin: 0.5rem 0;">• Monitor for any changes in symptoms</li>
+                            <li style="margin: 0.5rem 0;">• Annual screening advised</li>
+                            {% endif %}
+    </ul>
+                    </div>
+
+                    {% if prob[1] > 0.4 %}
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: #FFF5F5; border-radius: 8px; color: var(--warning-color);">
+                        <strong>Note:</strong> Patient requires close monitoring and follow-up based on risk assessment.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Back Button -->
+    <a href="/gyno" class="fixed-back-button">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Patient Entry
+    </a>
+</body>
+</html>

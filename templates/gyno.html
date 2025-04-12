@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCOS Predictor - Patient Entry</title>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #F5F6FF;
+            --text-color: #2D3748;
+            --border-color: #E2E8F0;
+            --error-color: #E53E3E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+        }
+
+        button[type="submit"] {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: #5B52FF;
+            transform: translateY(-1px);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-top: 1.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        .back-link svg {
+            margin-right: 0.5rem;
+        }
+
+        /* Fixed Back Button */
+        .fixed-back-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fixed-back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(108, 99, 255, 0.3);
+            background: #5B52FF;
+        }
+
+        .fixed-back-button:active {
+            transform: translateY(0);
+        }
+
+        .fixed-back-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            color: var(--error-color);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .modal-message {
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .modal-close {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #5B52FF;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .fixed-back-button {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Patient Entry</h1>
+        <div class="card">
+            <form id="patientForm" method="POST">
+                <div class="form-group">
+                    <label for="index">Patient Record Index</label>
+                    <input 
+                        type="number" 
+                        id="index" 
+                        name="index" 
+                        required 
+                        placeholder="Enter patient record index"
+                        min="0"
+                    >
+                </div>
+                <button type="submit">Review Patient</button>
+            </form>
+        </div>
+        <a href="/" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 8H1M1 8L8 15M1 8L8 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Invalid Index</h2>
+            <p class="modal-message">
+                The entered index is not valid. Available index range is 0 to <span id="maxIndexSpan"></span>.
+            </p>
+            <button class="modal-close" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Fixed Back Button -->
+    <a href="/" class="fixed-back-button">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Home
+    </a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('patientForm');
+            const modal = document.getElementById('errorModal');
+            const maxIndex = parseInt("{{ max_index }}");
+            const maxIndexSpan = document.getElementById('maxIndexSpan');
+            maxIndexSpan.textContent = maxIndex;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const indexValue = parseInt(document.getElementById('index').value);
+                
+                if (indexValue < 0 || indexValue > maxIndex) {
+                    showModal();
+                } else {
+                    this.submit();
+                }
+            });
+
+            function showModal() {
+                modal.classList.add('show');
+            }
+
+            function closeModal() {
+                modal.classList.remove('show');
+            }
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Show modal if there's an error from server
+            {% if error %}
+            showModal();
+            {% endif %}
+        });
+
+        // Make closeModal function globally available
+        function closeModal() {
+            document.getElementById('errorModal').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

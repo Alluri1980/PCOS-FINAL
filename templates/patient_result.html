@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCOS Predictor - Results</title>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #F5F6FF;
+            --text-color: #2D3748;
+            --border-color: #E2E8F0;
+            --warning-color: #FF6B6B;
+            --success-color: #48BB78;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 3rem;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .results-section {
+            flex: 1;
+            background: var(--secondary-color);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .prediction-result {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .result-header {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: {{ "var(--warning-color)" if prediction == 1 else "var(--success-color)" }};
+        }
+
+        .probability-bar {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            width: {{ "%.1f"|format(prob[1] * 100) }}%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .probabilities {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .warning-box {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #FFF5F5;
+            border: 1px solid var(--warning-color);
+            border-radius: 8px;
+            color: var(--warning-color);
+        }
+
+        .recommendation-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .recommendation-box h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .recommendation-list {
+            list-style: none;
+        }
+
+        .recommendation-list li {
+            margin: 0.8rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .recommendation-list li:before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .risk-level {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .risk-low {
+            background: #E6FFFA;
+            color: #2C7A7B;
+        }
+
+        .risk-moderate {
+            background: #FEFCBF;
+            color: #975A16;
+        }
+
+        .risk-high {
+            background: #FED7D7;
+            color: #C53030;
+        }
+
+        .patient-id {
+            background: var(--secondary-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-id-label {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .patient-id-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .copy-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0.2rem;
+            margin-left: 0.5rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .copy-button:hover {
+            opacity: 1;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* Fixed Back Button */
+        .fixed-back-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fixed-back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(108, 99, 255, 0.3);
+            background: #5B52FF;
+        }
+
+        .fixed-back-button:active {
+            transform: translateY(0);
+        }
+
+        .fixed-back-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .form-section, .results-section {
+                padding: 2rem 1rem;
+            }
+
+            .fixed-back-button {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h1>PCOS Predictor</h1>
+            <p style="color: #718096; margin-bottom: 2rem;">Your results are ready. Please review them on the right side.</p>
+            <div style="text-align: center;">
+                <a href="/" class="back-link">← Back to Home</a>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <div class="prediction-result">
+                <div class="patient-id">
+                    <div>
+                        <div class="patient-id-label">Patient ID</div>
+                        <div class="patient-id-value">
+                            {{ index }}
+                            <button class="copy-button" onclick="copyToClipboard('{{ index }}')" title="Copy ID">
+                                📋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="result-header">
+                    {{ "PCOS Detected" if prediction == 1 else "No PCOS Detected" }}
+                </h2>
+                
+                <div class="probabilities">
+                    <span>Probability</span>
+                    <span>{{ "%.1f"|format(prob[1] * 100) }}%</span>
+                </div>
+                
+                <div class="probability-bar">
+                    <div class="probability-fill"></div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: left;">
+                    <p><strong>Detailed Results:</strong></p>
+                    <ul style="list-style: none; margin-top: 0.5rem;">
+                        <li style="margin: 0.5rem 0;">No PCOS: {{ "%.1f"|format(prob[0] * 100) }}%</li>
+                        <li style="margin: 0.5rem 0;">PCOS: {{ "%.1f"|format(prob[1] * 100) }}%</li>
+                    </ul>
+                </div>
+
+                {% if prob[1] > 0.7 %}
+                <div class="warning-box">
+                    <p>⚠️ High Risk: Immediate medical consultation is strongly recommended.</p>
+                </div>
+                {% elif prob[1] > 0.4 %}
+                <div class="warning-box">
+                    <p>⚠️ Moderate Risk: It's recommended to schedule a consultation with your healthcare provider.</p>
+                </div>
+                {% endif %}
+
+                <div class="recommendation-box">
+                    <h3>Recommendations</h3>
+                    {% if prob[1] > 0.7 %}
+                    <span class="risk-level risk-high">High Risk</span>
+                    <ul class="recommendation-list">
+                        <li>Schedule an immediate appointment with a gynecologist</li>
+                        <li>Request comprehensive hormonal testing</li>
+                        <li>Consider ultrasound examination</li>
+                        <li>Track your menstrual cycle regularly</li>
+                        <li>Monitor your diet and exercise routine</li>
+                    </ul>
+                    {% elif prob[1] > 0.4 %}
+                    <span class="risk-level risk-moderate">Moderate Risk</span>
+                    <ul class="recommendation-list">
+                        <li>Schedule a consultation with your healthcare provider</li>
+                        <li>Keep a record of your menstrual cycles</li>
+                        <li>Consider lifestyle modifications</li>
+                        <li>Monitor any PCOS-related symptoms</li>
+                        <li>Follow up with regular check-ups</li>
+                    </ul>
+                    {% else %}
+                    <span class="risk-level risk-low">Low Risk</span>
+                    <ul class="recommendation-list">
+                        <li>Continue regular health check-ups</li>
+                        <li>Maintain a healthy lifestyle</li>
+                        <li>Monitor any changes in your menstrual cycle</li>
+                        <li>Practice preventive healthcare</li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Back Button -->
+    <a href="/patient" class="fixed-back-button">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Patient Entry
+    </a>
+
+    <script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Patient ID copied to clipboard!');
+        }).catch(function(err) {
+            console.error('Failed to copy text: ', err);
+        });
+    }
+    </script>
+</body>
+</html>

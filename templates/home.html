@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCOS Prediction System</title>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #F5F6FF;
+            --text-color: #2D3748;
+            --warning-color: #FF6B6B;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            color: var(--text-color);
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .role-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .role-section:hover {
+            background: var(--secondary-color);
+        }
+
+        .role-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .role-section p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            color: white;
+            background-color: var(--primary-color);
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+        }
+
+        .divider {
+            width: 1px;
+            background: #E2E8F0;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .role-section {
+                padding: 3rem 1rem;
+            }
+
+            .divider {
+                width: 80%;
+                height: 1px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="role-section">
+            <h2>Patient Portal</h2>
+            <p>Access your PCOS prediction tool and get instant results based on your health parameters.</p>
+            <a href="/patient" class="btn">Enter as Patient</a>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="role-section">
+            <h2>Doctor Portal</h2>
+            <p>Professional interface for gynecologists to input detailed patient data and receive comprehensive analysis.</p>
+            <a href="/gyno" class="btn">Enter as Doctor</a>
+        </div>
+    </div>
+</body>
+</html>
